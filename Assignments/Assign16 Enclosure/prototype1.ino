@@ -1,3 +1,12 @@
+//variables for debounce function(if needed)
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
+int lastButtonState=HIGH;
+int buttonState=HIGH;
+
+//initialize variable for score
+int score=0;
+
 void setup() {
   // put your setup code here, to run once:
   //pin for task1 selection
@@ -8,6 +17,8 @@ void setup() {
   pinMode(6, OUTPUT);
   //pins for correct LED light
   pinMode(3, OUTPUT);
+  //pin for incorrect and loss of game
+  pinMode(1,OUTPUT);
   //INPUT TO SEE IF RIGHT BUTTON IS PRESSED
   //task 1
   pinMode(9, INPUT_PULLUP);
@@ -15,10 +26,8 @@ void setup() {
   pinMode(10, INPUT_PULLUP);
   //task 3
   pinMode(0, INPUT_PULLUP);
-
+  //used to pull random value
   randomSeed(analogRead(0));
-  unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
-  unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 }
 
 void loop() {
@@ -29,9 +38,14 @@ void loop() {
   digitalWrite(7, LOW);
   digitalWrite(8, LOW);
   digitalWrite(3, LOW);
-  int input_answer;
-  int score=0;
-    int correct_answer=command();
+  digitalWrite(1, LOW);
+  //5 seconds to make deciscion
+  unsigned long event=5000;
+  //intiailze variable for previous time
+  unsigned long previousTime;
+  //variable to hold button pressed by user
+  int state=0;
+  int correct_answer=randomNum();
     //code to turn on correct LED light for task
     if(correct_answer==1)
       digitalWrite(8, HIGH);
@@ -40,30 +54,50 @@ void loop() {
     else
       digitalWrite(6, HIGH);
 
-    //delay for 3 seconds or response
-    int wait=0;
-    while(wait<3000){
-      delay(100);
-     if((digitalRead(6)==1 && digitalRead(0)==0) || (digitalRead(7)==1 && digitalRead(10)==0) || (digitalRead(8)==1 && digitalRead(9)==0)){
-      digitalWrite(3, HIGH);
-      delay(2000);
-      score++;
+
+    //wati for response or 5 seconds
+    previousTime=millis();
+    while((millis()-previousTime)<=event){
+    //check to see if correct button was pressed
+    if(!digitalRead(9)){
+      state=1;
       break;
-     }
-     else if((digitalRead(6)==0 && digitalRead(0)==1) || (digitalRead(7)==0 && digitalRead(10)==1) || (digitalRead(8)==0 && digitalRead(9)==1)){
-      delay(2000);
-      break;
-     }
-     else{
-      delay(10);
-      wait++;
-     }
     }
-    
+    else if(!digitalRead(10)){
+      state=2;
+      break;
+    }
+    else if(!digitalRead(0)){
+      state=3;
+      break;
+    }
+    //this means no input was made
+    else if((millis()-previousTime)>=event){
+      digitalWrite(1,HIGH);
+      //exit code and hold state
+      exit(1);
+    }
+   }
+
+    //now check to see if correct button had been pressed
+    if(state==correct_answer){
+      //turn on correct light
+      digitalWrite(3,HIGH);
+      delay(3000);
+    }
+    else{
+      //turn on incorrect light and end game
+      digitalWrite(1, HIGH);
+      exit(1);
+    }
+   
   }
 }
 
-int command(){
+//random task generator
+int randomNum(){
   int randomNumber= random(1,4);
   return randomNumber;
 }
+
+
