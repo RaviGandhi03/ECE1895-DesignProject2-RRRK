@@ -112,6 +112,7 @@ void loop() {
   lcd.print("Correct");
   lcd.setCursor(7,1);
   lcd.print("!!!!!");
+  delay(2000); //delay 2 seconds then display score
   score++;
   displayScore(score);
   }
