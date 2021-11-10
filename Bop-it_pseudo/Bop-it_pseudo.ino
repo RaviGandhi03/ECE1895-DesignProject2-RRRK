@@ -11,25 +11,27 @@
 
 //declare variable for LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-//declare variables for buttons
-int buttonTask=4;
+//declare variables
+
+int buttonTask=4;//buttons
 int startPin=0;
-//joystick
-int joyX=A0;
+
+int joyX=A0; //joystick
 int joyY=A1;
 int sw=1;
-//sensor
-int trig=3;
+
+int trig=3;//sensor
 int echo=2;
-//declare variable for ultrasonic sensor threshold
-int threshold=20;
-//other variables for sensor
-long duration;
+
+int threshold=20;//ultrasonic threshold
+
+long duration; //sensor variables
 int distance;
 
-//LED pins
-int greenLED=6;
+int greenLED=6; //LED pins
 int redLED=7;
+
+//-----------------------------------------------------------------//
 
 void setup() {
   // put your setup code here, to run once:
@@ -78,9 +80,9 @@ void loop() {
   //create code to play audio file for task to be performed
   playTaskPerform(correctTask);
   //reset time for countdown
-  previousTime=millis();
+  previousTime=millis(); = 5s
   //wait for response or answer
-  while((millis()-previousTime)<=decisionTime+10){
+  while((millis()-previousTime)<=decisionTime+10){ 5s
     //check to see what buttun was pressed
     if(!digitalRead(buttonTask)){
       userResponse=1;
@@ -98,20 +100,23 @@ void loop() {
     }
     //no response was picked in alloted time
     else if((millis()-previousTime)>=decisionTime){
-      //notify user of incorrect response and end game
+      displayEndGame();
+      break;
     }
   }
 
   //check to see if user picked correct response
   if(userResponse==correctTask){
-    //notify user correct score was made
-    
-    //increment score and display score
-    score++;
-    displayScore(score);
+  lcd.clear();
+  lcd.setCursor(5, 0);
+  lcd.print("Correct");
+  lcd.setCursor(7,1);
+  lcd.print("!!!!!");
+  score++;
+  displayScore(score);
   }
   else{
-    //notify user of incorrect response and end game
+    displayEndGame();
   }
   
   
@@ -187,4 +192,17 @@ bool sensorCheck(){
   else{
     return false;
   }
+}
+
+void displayEndGame(){
+for(int i = 0; i<5; i++){ 
+ lcd.clear();
+ sleep(2);
+ lcd.setCursor(5, 0);
+ lcd.print("Score: ");
+ lcd.setCursor(7,1);
+ lcd.print(score);
+ sleep(2);
+}
+exit(1);
 }
