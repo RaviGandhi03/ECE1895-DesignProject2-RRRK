@@ -1,49 +1,45 @@
-// ECE 1895: Design Project 2 (BopIt) 
-// Team Sigma (Ryan Hankee, Ravi Gandhi, Kamden Sarkey, Reece Basehore) 
-
+//********DIGITAL PIN INPUTS FOR BUTTTONS ARE PULLED HIGH SO PRESSING BUTTON MAKES INPUT GO LOW
+//include files for LCD display
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <SD.h>
 
-/* DIGITAL PIN INPUTS FOR BUTTTONS ARE PULLED HIGH SO PRESSING BUTTON MAKES INPUT GO LOW */
 
-/*  TASK 1= BUTTON
- *  TASK 2=JOYSTICK
- *  TASK 3=ULTRASONIC SENSOR  */
 
-//------------------------------------------------------------------------------//
+//TASK 1= BUTTON
+//TASK 2=JOYSTICK
+//TASK 3=ULTRASONIC SENSOR
 
-/*  Variable Declaration  */ 
+//declare variable for LCD
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
+//declare variables
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);         //  declare LCD display
+int buttonTask=4;//buttons
+int startPin=0;
 
-int buttonTask=4;         //  buttons
-int startPin=0;           //  initialize startpin
+int joyX=A0; //joystick
+int joyY=A1;
+int sw=1;
 
-int joyX=A0;              //  define joystickX
-int joyY=A1;              //  define joystickY
-int sw=1;                 //  pressed input
+int trig=3;//sensor
+int echo=2;
 
-int trig=3;               //  define sensor
-int echo=2;               //  ??
+int threshold=20;//ultrasonic threshold
 
-int threshold=20;         //  define threshold for ultrasonic sensor
+long duration; //sensor variables
+int distance;
 
-long duration;            //  sensor variables      
-int distance;             //  sensor variables 
+int greenLED=6; //LED pins
+int redLED=7;
 
-int greenLED=6;           //  set greenLED pin (6)
-int redLED=7;             //  set redLED pin (7)
-
-//------------------------------------------------------------------------------//
+//-----------------------------------------------------------------//
 
 void setup() {
-
-/*  Initialize LCD Display  */
+  // put your setup code here, to run once:
+  //initilize lcd display
   lcd.init();
   lcd.backlight();
-
-/*  Define inputs and outputs for pins  */
+  //create pin input and outputs
   pinMode(joyX, OUTPUT);
   pinMode(joyY, OUTPUT);
   pinMode(sw, INPUT_PULLUP);
@@ -57,8 +53,8 @@ void setup() {
 }
 
 void loop() {
-
-  //create variables to keep track of score and set equal to 0 before start of each game;
+  // put your main code here, to run repeatedly:
+  //creat variables to keep track of score and set equal to 0 before start of each game;
   int score=0;
   //make sure all outputs are low to start
   digitalWrite(greenLED, LOW);
