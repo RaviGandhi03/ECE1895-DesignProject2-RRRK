@@ -53,6 +53,7 @@ void setup() {
   pinMode(echo, INPUT);
   pinMode(greenLED, OUTPUT);
   pinMode(redLED, OUTPUT);
+  randomSeed(analogRead(3)); //used to create random num
   
 }
 
@@ -85,9 +86,9 @@ void loop() {
   //create code to play audio file for task to be performed
   playTaskPerform(correctTask);
   //reset time for countdown
-  previousTime=millis(); = 5s
+  previousTime=millis(); 
   //wait for response or answer
-  while((millis()-previousTime)<=decisionTime+10){ 5s
+  while((millis()-previousTime)<=decisionTime+10){
     //check to see what buttun was pressed
     if(!digitalRead(buttonTask)){
       userResponse=1;
@@ -134,6 +135,8 @@ void loop() {
 //create function to generate random task
 int getRandomTask(){
   //returns random task as integer 1-3
+  int num=random(1,4); //gives num random number 1-3
+  return num;
 }
 
 unsigned long getDecisionTime(int score){
@@ -201,14 +204,20 @@ bool sensorCheck(){
 }
 
 void displayEndGame(){
+  //a little confused what is being done here. This program will show score for about 5 microseconds due to loop and then just pause program with score displayed
 for(int i = 0; i<5; i++){ 
  lcd.clear();
- sleep(2);
  lcd.setCursor(5, 0);
  lcd.print("Score: ");
  lcd.setCursor(7,1);
- lcd.print(score);
- sleep(2);
+ //score is not declared in this scope!!!!!
+ //lcd.print(score);
 }
-exit(1);
+/* POSSIBLE END GAME FUNCTION PSUEDO
+ *  display game over and then play sound from SD card signifying loss
+ *  while(1){
+ *    then display score and switch between game over and score until reset button is pressed
+ *  }
+ */
+
 }
