@@ -1,0 +1,7 @@
+I recommend possibly using this library and maybe using this other project as reference
+
+library definitions:
+http://hackerspace-ffm.de/wiki/index.php?title=SimpleSDAudio
+
+project:
+https://create.arduino.cc/projecthub/skyline/diy-song-player-with-arduino-uno-503fc1
