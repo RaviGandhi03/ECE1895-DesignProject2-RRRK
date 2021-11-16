@@ -27,7 +27,7 @@ int sw=1;                 //  pressed input
 int trig=3;               //  define sensor
 int echo=2;               //  ??
 
-int threshold=20;         //  define threshold for ultrasonic sensor
+int threshold=20;         //  define threshold for ultrasonic sensor (in cm)
 
 long duration;            //  sensor variables      
 int distance;             //  sensor variables 
