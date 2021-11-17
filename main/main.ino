@@ -97,8 +97,7 @@ void loop() {
   digitalWrite(greenLED, LOW);
   digitalWrite(redLED, LOW);
   //generate a task to generate correct answer, task to be performed
-  int correctTask=3;
-  //getRandomTask();
+  int correctTask=getRandomTask();
   //figure out how much time user will have to make correct response
   unsigned long decisionTime=getDecisionTime(score);
   //create previos time variable
