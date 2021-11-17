@@ -4,6 +4,11 @@
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <SD.h>
+#include <SPI.h>
+#include <TMRpcm.h>
+
+
+#define SD_ChipSelectPin 10
 
 /* DIGITAL PIN INPUTS FOR BUTTTONS ARE PULLED HIGH SO PRESSING BUTTON MAKES INPUT GO LOW */
 
@@ -17,8 +22,10 @@
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);         //  declare LCD display
 
+TMRpcm audio;             //declare object for audio
+
 int buttonTask=4;         //  buttons
-int startPin=0;           //  initialize startpin
+int startPin=8;           //  initialize startpin
 
 int joyX=A0;              //  define joystickX
 int joyY=A1;              //  define joystickY
@@ -27,7 +34,7 @@ int sw=1;                 //  pressed input
 int trig=3;               //  define sensor
 int echo=2;               //  ??
 
-int threshold=20;         //  define threshold for ultrasonic sensor
+int threshold=20;         //  define threshold for ultrasonic sensor (in cm)
 
 long duration;            //  sensor variables      
 int distance;             //  sensor variables 
@@ -44,8 +51,8 @@ void setup() {
   lcd.backlight();
 
 /*  Define inputs and outputs for pins  */
-  pinMode(joyX, OUTPUT);
-  pinMode(joyY, OUTPUT);
+  pinMode(joyX, INPUT);
+  pinMode(joyY, INPUT);
   pinMode(sw, INPUT_PULLUP);
   pinMode(buttonTask, INPUT_PULLUP);
   pinMode(startPin, INPUT_PULLUP);
@@ -54,6 +61,17 @@ void setup() {
   pinMode(greenLED, OUTPUT);
   pinMode(redLED, OUTPUT);
   randomSeed(analogRead(3)); //used to create random num
+  audio.speakerPin=9;  //declare pin used for speaker
+
+  //check to see if SD is able to be read
+  //will turn on both LEDs if incorrect
+  if(!SD.begin(SD_ChipSelectPin)){
+    digitalWrite(greenLED, HIGH);
+    digitalWrite(redLED, HIGH);
+    exit(1);
+  }
+
+  audio.setVolume(4);  //set volume of speaker initially
   
 }
 
@@ -68,23 +86,29 @@ void loop() {
   while(digitalRead(startPin)){                       
     //stay here until start button is pressed
   }
+  
   //immediately initialize score to 0 on lcd display
   displayScore(score);
+  delay(2000);
+  
   //once button is pressed play game until score reaches 100 or incorrect response
   while(score<=99){
   //set digital outputs all low
   digitalWrite(greenLED, LOW);
   digitalWrite(redLED, LOW);
   //generate a task to generate correct answer, task to be performed
-  int correctTask= getRandomTask();
+  int correctTask=3;
+  //getRandomTask();
   //figure out how much time user will have to make correct response
   unsigned long decisionTime=getDecisionTime(score);
   //create previos time variable
   unsigned long previousTime;
   //have variable to hold user response
   int userResponse=0;
-  //create code to play audio file for task to be performed
+  //create code to play audio file for task to be perform
+  
   playTaskPerform(correctTask);
+  
   //reset time for countdown
   previousTime=millis(); 
   //wait for response or answer
@@ -92,6 +116,7 @@ void loop() {
     //check to see what buttun was pressed
     if(!digitalRead(buttonTask)){
       userResponse=1;
+      digitalWrite(greenLED, HIGH);
       break;
     }
     //joystick movement to see if joystick was moved
@@ -99,31 +124,34 @@ void loop() {
       userResponse=2;
       break;
     }
+    
     //sensor check to see how close to ultrasonic sensor
     else if(sensorCheck()){
       userResponse=3;
       break;
     }
+    
     //no response was picked in alloted time
     else if((millis()-previousTime)>=decisionTime){
-      displayEndGame();
+      displayEndGame(score);
       break;
     }
   }
 
   //check to see if user picked correct response
   if(userResponse==correctTask){
-  lcd.clear();
-  lcd.setCursor(5, 0);
-  lcd.print("Correct");
-  lcd.setCursor(7,1);
-  lcd.print("!!!!!");
-  delay(2000); //delay 2 seconds then display score
-  score++;
-  displayScore(score);
+    lcd.clear();
+    lcd.setCursor(5, 0);
+    lcd.print("Correct");
+    lcd.setCursor(7,1);
+    lcd.print("!!!!!");
+    //digitalWrite(greenLED, HIGH); //set green led to high
+    delay(2000); //delay 2 seconds then display score
+    score++;
+    displayScore(score);
   }
   else{
-    displayEndGame();
+    displayEndGame(score);
   }
   
   
@@ -141,18 +169,29 @@ int getRandomTask(){
 
 unsigned long getDecisionTime(int score){
   //generate time in milliseconds that user will have to make response based on score
+  //set up for 1 second response time on final level and 5 second response time on first level
+  int t=-40*score+5000;
+  return t;
 }
 
 //play correct audio file
 void playTaskPerform(int task){
   if(task==1){
     //play task 1 audio file
+    audio.play("task1.WAV");
   }
   else if(task==2){
     //play task 2 audio file
+    audio.play("task2.WAV");
   }
   else{
     //play task 3 audio file
+    audio.play("task3.WAV");
+  }
+
+  //now wait until audio file is done playing 
+  while(audio.isPlaying()){
+    //just wait here until playing is finished
   }
 }
 //function to celebrate user winning game
@@ -173,7 +212,7 @@ void displayScore(int score){
 //joystick movement function
 bool joystickMovement(){
   //write code to see if joystick was moved
-  if(analogRead(joyX)>10 || analogRead(joyY)>10 ||!digitalRead(1)){
+  if(analogRead(joyX)>=800 || analogRead(joyY)>=800 ||!digitalRead(1) ||analogRead(joyX)<=300 || analogRead(joyY)<=300){
     return true;
   }
   else{
@@ -203,15 +242,19 @@ bool sensorCheck(){
   }
 }
 
-void displayEndGame(){
+void displayEndGame(int score){
   //a little confused what is being done here. This program will show score for about 5 microseconds due to loop and then just pause program with score displayed
-for(int i = 0; i<5; i++){ 
+for(int i = 0; i<5; i++){
+ digitalWrite(redLED, HIGH); 
  lcd.clear();
  lcd.setCursor(5, 0);
  lcd.print("Score: ");
  lcd.setCursor(7,1);
- //score is not declared in this scope!!!!!
- //lcd.print(score);
+ lcd.print(score);
+ audio.play("incorrect.WAV");
+ while(1){
+  //stay here until reset button is pressed
+ }
 }
 /* POSSIBLE END GAME FUNCTION PSUEDO
  *  display game over and then play sound from SD card signifying loss
