@@ -34,7 +34,7 @@ int sw=1;                 //  pressed input
 int trig=3;               //  define sensor
 int echo=2;               //  ??
 
-int threshold=20;         //  define threshold for ultrasonic sensor (in cm)
+int threshold=10;         //  define threshold for ultrasonic sensor (in cm)
 
 long duration;            //  sensor variables      
 int distance;             //  sensor variables 
@@ -115,7 +115,6 @@ void loop() {
     //check to see what buttun was pressed
     if(!digitalRead(buttonTask)){
       userResponse=1;
-      digitalWrite(greenLED, HIGH);
       break;
     }
     //joystick movement to see if joystick was moved
@@ -139,6 +138,7 @@ void loop() {
 
   //check to see if user picked correct response
   if(userResponse==correctTask){
+    digitalWrite(greenLED, HIGH);
     lcd.clear();
     lcd.setCursor(5, 0);
     lcd.print("Correct");
