@@ -179,23 +179,23 @@ unsigned long getDecisionTime(int score){
 void playTaskPerform(int task){
   if(task==0){
     // play instructions
-    audio.play("instructions.WAV");
+    audio.play("instructions.wav");
   }
   else if(task==1){
     //play task 1 audio file
-    audio.play("task1.WAV");
+    audio.play("task1.wav");
   }
   else if(task==2){
     //play task 2 audio file
-    audio.play("task2.WAV");
+    audio.play("task2.wav");
   }
   else if(task==3){
     //play task 3 audio file
-    audio.play("task3.WAV");
+    audio.play("task3.wav");
   }
   else if(task==4){
     //play success sound
-    audio.play("success.WAV"); 
+    audio.play("success.wav"); 
 
   //now wait until audio file is done playing 
   while(audio.isPlaying()){
@@ -259,7 +259,7 @@ for(int i = 0; i<5; i++){
  lcd.print("Score: ");
  lcd.setCursor(7,1);
  lcd.print(score);
- audio.play("fail.WAV");
+ audio.play("fail.wav");
  while(1){
   //stay here until reset button is pressed
  }
