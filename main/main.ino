@@ -3,7 +3,7 @@
 
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-#include <SD.h>
+//#include <SD.h> - should already be included in sd.h
 #include <SPI.h>
 #include <TMRpcm.h>
 
@@ -22,7 +22,7 @@
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);         //  declare LCD display
 
-TMRpcm audio;             //declare object for audio
+TMRpcm audio;             // declare object for audio
 
 int buttonTask=4;         //  buttons
 int startPin=8;           //  initialize startpin
@@ -106,7 +106,7 @@ void loop() {
   int userResponse=0;
   //create code to play audio file for task to be perform
   
-  playTaskPerform(correctTask);
+  playTaskPerform(0);
   
   //reset time for countdown
   previousTime=millis(); 
@@ -145,11 +145,13 @@ void loop() {
     lcd.setCursor(7,1);
     lcd.print("!!!!!");
     //digitalWrite(greenLED, HIGH); //set green led to high
-    delay(2000); //delay 2 seconds then display score
+    playTaskPerform(4);
+    delay(2000); //delay 2 seconds then display score 
     score++;
     displayScore(score);
   }
   else{
+    playTaskPerform(5);
     displayEndGame(score);
   }
   
@@ -175,7 +177,11 @@ unsigned long getDecisionTime(int score){
 
 //play correct audio file
 void playTaskPerform(int task){
-  if(task==1){
+  if(task==0){
+    // play instructions
+    audio.play("instructions.WAV");
+  }
+  else if(task==1){
     //play task 1 audio file
     audio.play("task1.WAV");
   }
@@ -183,10 +189,13 @@ void playTaskPerform(int task){
     //play task 2 audio file
     audio.play("task2.WAV");
   }
-  else{
+  else if(task==3){
     //play task 3 audio file
     audio.play("task3.WAV");
   }
+  else if(task==4){
+    //play success sound
+    audio.play("success.WAV"); 
 
   //now wait until audio file is done playing 
   while(audio.isPlaying()){
@@ -250,7 +259,7 @@ for(int i = 0; i<5; i++){
  lcd.print("Score: ");
  lcd.setCursor(7,1);
  lcd.print(score);
- audio.play("incorrect.WAV");
+ audio.play("fail.WAV");
  while(1){
   //stay here until reset button is pressed
  }
